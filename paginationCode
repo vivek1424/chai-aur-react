@@ -1,0 +1,65 @@
+import { useEffect, useState } from 'react'
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+import './App.css'
+import Child from '../components/Child'
+import useToggle from '../customHooks/useToggle'
+import useFetch from '../customHooks/useFetch'
+import Card from './components/Card'
+
+function App() {
+  const [products, setProducts] = useState([]);
+  const [pagenum, setPagenum]=useState(0)
+  const PAGE_SIZE=10 
+  
+
+  const fetchData = async () => {
+    const res = await fetch(
+      "https://dummyjson.com/products?limit=50"
+    );
+    const records = await res.json();
+    setProducts(records.products);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+ 
+  const totalPages=Math.ceil(products?.length/PAGE_SIZE)
+
+  const handlePage=(number)=>{
+    setPagenum(number)
+  }
+  const handlePrev=()=>{
+    setPagenum((current)=>current-1)
+  }
+  const handleNext=()=>{
+    setPagenum((current)=>current+1)
+  }
+  let initalValue=pagenum
+  let finalValue=pagenum+PAGE_SIZE
+
+  return !products.length ? (
+    <p>Product not found</p>
+  ) : (
+    <div className='pagination-comp'>
+      <h2>Pagination</h2>
+      {pagenum!==0 && <button onClick={handleNext}>Prev</button>}
+      <div className='numbers'>
+        {[...Array(totalPages).keys()].map((n)=> {
+         return  <span className='number-span'
+         onClick={()=>{handlePage(n)}}
+         >{n+1}</span>
+        })}
+      </div>
+      {pagenum!==totalPages && <button onClick={handleNext}>Next</button>}
+      
+      {products.slice(initalValue,finalValue).map((product) => (
+        <Card  key={product.id} imgURL={product.thumbnail} title={product.title}/>
+      ))}
+    </div>
+  );
+}
+
+
+export default App 
